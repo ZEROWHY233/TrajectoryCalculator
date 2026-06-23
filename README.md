@@ -8,10 +8,6 @@ https://img.shields.io/badge/PRs-welcome-brightgreen.svg
 
 《铁巢重炮》是一款以火炮对射为核心的策略游戏，玩家需要根据距离、弹药类型和装药量调整炮口仰角，实现对敌方堡垒的精确打击。本工具将复杂的弹道公式可视化，助您一炮中的！
 
-📸 界面预览
-深色主题	浅色主题
-https://screenshots/dark.png	https://screenshots/light.png
-注：截图请自行添加，此处仅为示意。
 
 ✨ 功能特性（专为游戏优化）
 精确弹道计算
@@ -79,7 +75,7 @@ UI 样式：自定义资源字典 + 动态主题切换
 
 记录操作
 
-命中标记：选中记录后点击“✔ 命中”，该行变绿（或其他高亮色）。
+命中标记：选中记录后点击“命中”，该行变绿（或其他高亮色）。
 
 删除选中：移除无用记录（可多选）。
 
@@ -105,7 +101,7 @@ Visual Studio 2022（或 VS Code + C# 扩展）
 
 .NET Framework 4.8 开发包
 
-克隆仓库后直接打开 .sln 文件即可。
+克隆仓库后直接打开 .exe 文件即可。
 
 代码规范
 使用 C# 7.3 语法（确保与 .NET 4.8 兼容）。
@@ -118,9 +114,6 @@ XAML 资源键命名采用 {ObjectType}{Purpose}（如 BackgroundBrush）。
 MIT License，您可以自由使用、修改、分发，但需保留版权声明。
 
 💬 反馈与支持
-游戏交流群/社区：[请自行添加链接]
 
-项目 Issues：GitHub Issues
-
-作者邮箱：your-email@example.com（请替换）
+作者邮箱：why5202022@163.com（请替换）
 

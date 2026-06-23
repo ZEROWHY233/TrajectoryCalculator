@@ -41,7 +41,7 @@ Windows 7 SP1 或更高版本
 
 从源码编译（为开发者）
 bash
-git clone https://github.com/yourusername/TrajectoryCalculator.git
+[git clone https://github.com/yourusername/TrajectoryCalculator.git](https://github.com/ZEROWHY233/IronBallisticCalc)
 cd TrajectoryCalculator
 # 使用 Visual Studio 2022 或更高版本打开 .sln 文件
 msbuild TrajectoryCalculator.csproj /p:Configuration=Release

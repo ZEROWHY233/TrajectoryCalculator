@@ -1,0 +1,308 @@
+﻿<Window x:Class="TrajectoryCalculator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Height="600" Width="900" MinHeight="500" MinWidth="800"
+        Background="{DynamicResource BackgroundBrush}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        WindowStartupLocation="CenterScreen"
+        Padding="0"
+        Margin="0"
+        BorderThickness="0"
+        Focusable="True">
+    <WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0"
+                            ResizeBorderThickness="4"
+                            GlassFrameThickness="0"
+                            UseAeroCaptionButtons="False"
+                            CornerRadius="0"/>
+    </WindowChrome.WindowChrome>
+    <Window.Resources>
+        <!-- ComboBox 样式 -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="Background" Value="{DynamicResource EntryBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource FrameBackgroundBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton"
+                                          Background="{TemplateBinding Background}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="{TemplateBinding BorderThickness}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press"
+                                          HorizontalContentAlignment="Stretch">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Grid.Column="0"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      Margin="6,0,0,0"
+                                                      VerticalAlignment="Center" />
+                                    <Path Grid.Column="1"
+                                          Fill="{TemplateBinding Foreground}"
+                                          Data="M 0 0 L 4 4 L 8 0 Z"
+                                          Margin="0,0,8,0"
+                                          VerticalAlignment="Center" />
+                                </Grid>
+                            </ToggleButton>
+                            <Popup x:Name="Popup"
+                                   IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False">
+                                <Border Background="{DynamicResource EntryBackgroundBrush}"
+                                        BorderBrush="{DynamicResource FrameBackgroundBrush}"
+                                        BorderThickness="1"
+                                        MinWidth="{TemplateBinding ActualWidth}"
+                                        MaxHeight="200">
+                                    <ScrollViewer CanContentScroll="True">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- DataGrid行样式 最终稳定版：Hit绿色正常、选中覆盖绿色、无崩溃 -->
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="{DynamicResource GridRowEvenBrush}" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="IsHitTestVisible" Value="True" />
+            <Setter Property="Focusable" Value="True" />
+            <Style.Triggers>
+                <!-- 隔行底色 -->
+                <Trigger Property="AlternationIndex" Value="1">
+                    <Setter Property="Background" Value="{DynamicResource GridRowOddBrush}" />
+                </Trigger>
+                <!-- Hit 整行绿色底色 -->
+                <DataTrigger Binding="{Binding Hit}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource GridRowHitBrush}" />
+                    <Setter Property="Foreground" Value="White" />
+                </DataTrigger>
+                <!-- 选中整行蓝色底色（最高优先级覆盖） -->
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource ButtonCalcBrush}" />
+                    <Setter Property="Foreground" Value="White" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <!-- DataGridCell 透明背景，透出行颜色 -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="TextBlock.TextWrapping" Value="NoWrap" />
+            <Setter Property="TextBlock.TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource FrameBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BackgroundBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="4,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- 单元格对齐样式 -->
+        <Style x:Key="CellCenter" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="CellRight" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="CellLeft" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 自定义标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource FrameBackgroundBrush}" MouseDown="TitleBar_MouseDown" Margin="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="弹道计算器" Foreground="{DynamicResource TextBrush}" FontSize="{DynamicResource FontSizeNormal}" VerticalAlignment="Center" Margin="12,0"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button x:Name="BtnMin" Content="−" Width="36" Background="Transparent" Foreground="{DynamicResource TextBrush}" Click="BtnMin_Click"/>
+                    <Button x:Name="BtnMax" Content="□" Width="36" Background="Transparent" Foreground="{DynamicResource TextBrush}" Click="BtnMax_Click"/>
+                    <Button x:Name="BtnClose" Content="×" Width="36" Background="Transparent" Foreground="#ff6666" Click="BtnClose_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 输入区域 -->
+        <Border Grid.Row="1" Background="{DynamicResource FrameBackgroundBrush}" Padding="12" CornerRadius="8" Margin="12,12,12,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label Content="水平角：" Grid.Column="0" Foreground="{DynamicResource TextBrush}" FontSize="{DynamicResource FontSizeNormal}" VerticalAlignment="Center"/>
+                <TextBox x:Name="horTextBox" Grid.Column="1" 
+                         Background="{DynamicResource EntryBackgroundBrush}" 
+                         Foreground="{DynamicResource EntryForegroundBrush}" 
+                         FontSize="{DynamicResource FontSizeNormal}" 
+                         Height="28"
+                         VerticalContentAlignment="Center"
+                         Padding="2,0,2,0"
+                         Margin="0,0,8,0"/>
+                <Label Content="距离(KM)：" Grid.Column="2" Foreground="{DynamicResource TextBrush}" FontSize="{DynamicResource FontSizeNormal}" VerticalAlignment="Center"/>
+                <TextBox x:Name="distanceTextBox" Grid.Column="3" 
+                         Background="{DynamicResource EntryBackgroundBrush}" 
+                         Foreground="{DynamicResource EntryForegroundBrush}" 
+                         FontSize="{DynamicResource FontSizeNormal}" 
+                         Height="28"
+                         VerticalContentAlignment="Center"
+                         Padding="2,0,2,0"
+                         Margin="0,0,8,0"/>
+                <Label Content="装药量：" Grid.Column="4" Foreground="{DynamicResource TextBrush}" FontSize="{DynamicResource FontSizeNormal}" VerticalAlignment="Center"/>
+                <ComboBox x:Name="chargeCombo" Grid.Column="5" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <Label Content="弹种：" Grid.Column="6" Foreground="{DynamicResource TextBrush}" FontSize="{DynamicResource FontSizeNormal}" VerticalAlignment="Center"/>
+                <ComboBox x:Name="ammoCombo" Grid.Column="7" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <Button Grid.Column="8" Content="🧮 一键计算" Background="{DynamicResource ButtonCalcBrush}" Foreground="White" FontSize="{DynamicResource FontSizeNormal}" Click="CalcButton_Click" Padding="14,6" HorizontalAlignment="Left" Margin="8,0,0,0" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- 结果标签 -->
+        <Label x:Name="resultLabel" Grid.Row="2" Content="俯仰角：—— °" FontWeight="Bold" FontSize="{DynamicResource FontSizeNormal}" Foreground="{DynamicResource TextBrush}" HorizontalAlignment="Center" Margin="0,6,0,12"/>
+
+        <!-- 数据表格：关闭虚拟化防止滚动样式丢失 -->
+        <DataGrid Grid.Row="3" x:Name="dataGrid" AutoGenerateColumns="False" 
+          VirtualizingPanel.IsVirtualizing="False"
+          Background="{DynamicResource BackgroundBrush}" 
+          Foreground="{DynamicResource TextBrush}"
+          FontSize="{DynamicResource FontSizeNormal}"
+          AlternationCount="2"
+          SelectionMode="Extended"
+          SelectionUnit="FullRow"
+          IsReadOnly="True"
+          HeadersVisibility="Column"
+          GridLinesVisibility="None"
+          BorderBrush="{DynamicResource FrameBackgroundBrush}"
+          BorderThickness="1"
+          Margin="12,0,12,12"
+          CanUserResizeColumns="True"
+          CanUserSortColumns="True"
+          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+          ScrollViewer.VerticalScrollBarVisibility="Auto"
+          MouseDown="DataGrid_MouseDown"
+          RowHeight="30">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60">
+                    <DataGridTextColumn.ElementStyle>
+                        <StaticResource ResourceKey="CellCenter" />
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Header="水平角°" 
+                            Binding="{Binding Horizontal, StringFormat={}{0:F2}, TargetNullValue=—}" 
+                            Width="*" MinWidth="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <StaticResource ResourceKey="CellCenter" />
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Header="距离KM" 
+                            Binding="{Binding Distance, StringFormat={}{0:F2}}" 
+                            Width="*" MinWidth="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <StaticResource ResourceKey="CellCenter" />
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Header="装药量" Binding="{Binding Charge}" Width="80">
+                    <DataGridTextColumn.ElementStyle>
+                        <StaticResource ResourceKey="CellCenter" />
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Header="弹种" Binding="{Binding AmmoType}" Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <StaticResource ResourceKey="CellCenter" />
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Header="俯仰角°" 
+                            Binding="{Binding Pitch, StringFormat={}{0:F2}}" 
+                            Width="*" MinWidth="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <StaticResource ResourceKey="CellCenter" />
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- 底部按钮区 -->
+        <Border Grid.Row="4" Background="{DynamicResource FrameBackgroundBrush}" Padding="12" CornerRadius="8" Margin="12,0,12,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="✔ 命中" Background="{DynamicResource ButtonHitBrush}" Foreground="White" FontSize="{DynamicResource FontSizeNormal}" Click="MarkHit_Click" Padding="14,6" Margin="0,0,12,0"/>
+                <Button Grid.Column="1" Content="✖ 删除选中" Background="{DynamicResource ButtonDeleteBrush}" Foreground="White" FontSize="{DynamicResource FontSizeNormal}" Click="DeleteSelected_Click" Padding="14,6" Margin="0,0,12,0"/>
+                <Button Grid.Column="2" Content="🗑 清空全部" Background="{DynamicResource ButtonClearBrush}" Foreground="White" FontSize="{DynamicResource FontSizeNormal}" Click="ClearAll_Click" Padding="14,6" Margin="0,0,12,0"/>
+                <!-- 圆形i版权按钮 -->
+                <Button Grid.Column="3" Width="32" Height="32" Background="{DynamicResource FrameBackgroundBrush}" BorderBrush="{DynamicResource TextBrush}" Foreground="{DynamicResource TextBrush}" Click="AboutBtn_Click" Margin="0,0,12,0">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Ellipse Width="32" Height="32" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="1.2"/>
+                                <TextBlock Text="i" Foreground="{TemplateBinding Foreground}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button Grid.Column="4" Content="🌓 浅/暗" Background="{DynamicResource ButtonSwitchBrush}" Foreground="White" FontSize="{DynamicResource FontSizeNormal}" Click="SwitchTheme_Click" Padding="14,6" Margin="0,0,12,0"/>
+                <Label Grid.Column="5" Content="字号：" Foreground="{DynamicResource TextBrush}" FontSize="{DynamicResource FontSizeNormal}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox x:Name="fontSizeCombo" Grid.Column="6" Width="60" SelectionChanged="FontSizeCombo_SelectionChanged" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
